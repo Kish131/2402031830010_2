@@ -1,67 +1,54 @@
-def print_board(board):
-    print("|---|---|---|")
-    print(f"| {board[0]} | {board[1]} | {board[2]} |")
-    print("|-----------|")
-    print(f"| {board[3]} | {board[4]} | {board[5]} |")
-    print("|-----------|")
-    print(f"| {board[6]} | {board[7]} | {board[8]} |")
-    print("|---|---|---|")
+import tkinter as tk
+from tkinter import messagebox
 
+class TicTacToe:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Tic-Tac-Toe")
+        self.turn = "X"
+        self.board = [None] * 9
+        self.buttons = []
 
-def check_winner(board, turn):
-    winning_combinations = [
-        (0, 1, 2), (3, 4, 5), (6, 7, 8),  # rows
-        (0, 3, 6), (1, 4, 7), (2, 5, 8),  # columns
-        (0, 4, 8), (2, 4, 6)              # diagonals
-    ]
+        # Create the game board buttons
+        for i in range(9):
+            button = tk.Button(root, text="", font=("Arial", 20), width=5, height=2,
+                               command=lambda i=i: self.on_button_click(i))
+            row, col = divmod(i, 3)
+            button.grid(row=row, column=col)
+            self.buttons.append(button)
 
-    for combo in winning_combinations:
-        line = board[combo[0]] + board[combo[1]] + board[combo[2]]
-        if line == "XXX":
-            return "X"
-        elif line == "OOO":
-            return "O"
+    def on_button_click(self, index):
+        if self.board[index] is None:
+            self.board[index] = self.turn
+            self.buttons[index].config(text=self.turn)
+            winner = self.check_winner()
+            if winner:
+                messagebox.showinfo("Game Over", f"Player {winner} wins!")
+                self.reset_game()
+            elif all(cell is not None for cell in self.board):
+                messagebox.showinfo("Game Over", "It's a draw!")
+                self.reset_game()
+            else:
+                self.turn = "O" if self.turn == "X" else "X"
 
-    if all(cell in ['X', 'O'] for cell in board):
-        return "draw"
+    def check_winner(self):
+        winning_combinations = [
+            (0, 1, 2), (3, 4, 5), (6, 7, 8),  # Rows
+            (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Columns
+            (0, 4, 8), (2, 4, 6)               # Diagonals
+        ]
+        for combo in winning_combinations:
+            if self.board[combo[0]] == self.board[combo[1]] == self.board[combo[2]] != None:
+                return self.board[combo[0]]
+        return None
 
-    return None
-
-
-def main():
-    board = [str(i + 1) for i in range(9)]
-    turn = "X"
-    winner = None
-
-    print("Welcome to 3x3 Tic Tac Toe.")
-    print_board(board)
-    print("X will play first. Enter a slot number to place X in:")
-
-    while winner is None:
-        try:
-            num_input = int(input())
-            if not 1 <= num_input <= 9:
-                print("Invalid input; re-enter slot number:")
-                continue
-        except ValueError:
-            print("Invalid input; re-enter slot number:")
-            continue
-
-        if board[num_input - 1] == str(num_input):
-            board[num_input - 1] = turn
-            print_board(board)
-            winner = check_winner(board, turn)
-            turn = "O" if turn == "X" else "X"
-            if winner is None:
-                print(f"{turn}'s turn; enter a slot number to place {turn} in:")
-        else:
-            print("Slot already taken; re-enter slot number:")
-
-    if winner == "draw":
-        print("It's a draw! Thanks for playing.")
-    else:
-        print(f"Congratulations! {winner}'s have won! Thanks for playing.")
-
+    def reset_game(self):
+        self.board = [None] * 9
+        for button in self.buttons:
+            button.config(text="")
+        self.turn = "X"
 
 if __name__ == "__main__":
-    main()
+    root = tk.Tk()
+    game = TicTacToe(root)
+    root.mainloop()
